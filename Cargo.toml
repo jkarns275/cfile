@@ -2,5 +2,7 @@
 name = "cfile"
 version = "0.1.0"
 authors = ["Joshua Karns <jkarns@oswego.edu>"]
+description = "A wrapper around the C FILE struct for rust"
+license = "MIT"
 
 [dependencies]
