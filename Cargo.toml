@@ -1,6 +1,6 @@
 [package]
 name = "cfile"
 version = "0.1.0"
-authors = ["Joshua Karns <jkarns275@gmail.com>"]
+authors = ["Joshua Karns <jkarns@oswego.edu>"]
 
 [dependencies]
