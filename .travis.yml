@@ -1,4 +1,7 @@
 language: rust
+rust:
+    - beta
+    - nightly
 after_success: |
   [ $TRAVIS_BRANCH = master ] &&
   [ $TRAVIS_PULL_REQUEST = false ] &&
@@ -7,3 +10,6 @@ after_success: |
   sudo pip install ghp-import &&
   ghp-import -n target/doc &&
   git push -fq https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages
+env:
+  global:
+    secure: nIgUmvhq1rXIAH+4X+mKQCSSx2vem1sXJWtlYudP/NHDqHSzbpapyuGasDdBrg41g4FJa+Yb5LdQDY+ieoTF6nOgluBswZyuUJrHOtyg+ohGDPqT8YV7h9nvMRNqrLhmhCP5CpsPcuFGFtFXIG5V/T5ekdbmr6KiGb0zSJ8zDylZEuyVLJqrQMQpRTcE1FJ323DTSGH2RnRJkeCZZ6FRJugNyegvD0ed5gJSbrBHb8ZHwCbo2Shmf55m9JSoyufDglT+w1vdvozygdgoEy0u8ivCc8TbIG9srmeJVZXEzAFX3W6cNHn2WllWRLijFMcQ1+vCvuyyiHFbTdVUfmwICzog1DAwvSwlv3nEZr1w3Eu8z6Lm2Mc/j6RJGSG6FgG5PNbxTG0ZpT7mjNroZF0XOA+CX6R+n9PGLyR0LK9asNF+wAjWBEVRIlKkkE9TmHYM3LFNiZu87ESWLcbntYX1GKuF6B61QGvtx2eBIkBRtpxSOuKfy/y1sAErcNhgFgAxPY6JhyexBFcnTbA7GTAWBZTVud6LYQxDNvMOIgk8o2eSr+6ABc4cmLDnvm+r0KtuXZeEEhmz6SMIIHWduJMlsr5gYwQcze1oV5H1Pg0pP5/mBI2qAEcLrZZ8MHNPtnNS0pyneb8fO/q+qd0hTJ/oDtWXfYmT6xqbTTHwlPDUK3Y=
