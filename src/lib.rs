@@ -1,3 +1,4 @@
+#![doc(html_root_url = "https://jkarns275.github.io/cfile/")]
 #![feature(libc)]
 extern crate libc;
 
