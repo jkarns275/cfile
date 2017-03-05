@@ -20,17 +20,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 use libc;
 use libc::FILE;
 
-use error::Error;
+use std::io::{ Write, Read, SeekFrom, Error, ErrorKind, Seek };
 
-use std::io::SeekFrom;
 use std::path::Path;
 use std::ffi::CString;
 use std::ptr::null_mut;
 use std::os::unix::ffi::OsStrExt;
 
 /// A utility function to pull the current value of errno and put it into an Error::Errno
-unsafe fn get_error() -> Error {
-    Error::Errno(*(libc::__errno_location()) as u64)
+fn get_error<T>() -> Result<T, Error> {
+    Err(Error::last_os_error())
 }
 
 /// A utility function to change read/write/execute permissions of a file.
@@ -39,7 +38,7 @@ pub fn chmod<P: AsRef<Path>>(path: P, mode: u32) -> Result<(), Error> {
     if result == 0 {
         Ok(())
     } else {
-        Err(unsafe { get_error() })
+        get_error()
     }
 
 }
@@ -87,7 +86,6 @@ impl CFile {
     /// # Failure
     /// This function will return Err for a whole bunch of reasons, the errno id will be returned
     /// as an Error::Errno(u64). For more information on what that number actually means see
-    /// ```
     pub fn open_random_access<P: AsRef<Path>>(path: P) -> Result<CFile, Error> {
         let _ = Self::create_file(&path); // Ensure the file exists, create it if it doesn't
         Self::open(path, RANDOM_ACCESS_MODE)
@@ -108,18 +106,14 @@ impl CFile {
     /// Attempt to open the file with path p.
     /// # Examples
     /// ```
-    /// use cfile::CFile;
+    /// use cfile_rs;
+    /// use cfile_rs::CFile;
+    /// use cfile_rs::TRUNCATAE_RANDOM_ACCESS_MODE;
+    /// use std::str::from_utf8;
+    /// use std::io::{ Seek, SeekFrom, Read, Write };
     ///
     /// // Truncate random access mode will overwrite the old "data.txt" file if it exists.
-    /// let file = CFile::open("data.txt", cfile::TRUNCATAE_RANDOM_ACCESS_MODE).unwrap();
-    /// match file.write_all("Howdy folks!".as_bytes()) {
-    ///     Ok(()) => println!("Successfully wrote to the file!"),
-    ///     Err(err) => {
-    ///         let error_str = err.to_cstr();
-    ///         let errno = err.errno();
-    ///         println!("Encountered error {}: {:?}", errno, error_str);
-    ///     }
-    /// };
+    /// let mut file = CFile::open("data.txt", TRUNCATAE_RANDOM_ACCESS_MODE).unwrap();
     /// ```
     pub fn open<P: AsRef<Path>>(path: P, mode: &str) -> Result<CFile, Error> {
         unsafe {
@@ -127,7 +121,7 @@ impl CFile {
                 if let Ok(mode) = CString::new(mode) {
                     let file_ptr = libc::fopen(path.as_ptr(), mode.as_ptr());
                     if file_ptr.is_null() {
-                        Err(get_error())
+                        get_error()
                     } else {
                         Ok(
                             CFile {
@@ -137,10 +131,10 @@ impl CFile {
                         )
                     }
                 } else {
-                    Err(Error::BadPath)
+                    get_error()
                 }
             } else {
-                Err(Error::BadPath)
+                get_error()
             }
         }
     }
@@ -148,13 +142,28 @@ impl CFile {
     /// Deletes the file from the filesystem, and consumes the object.
     /// # Errors
     /// On error Error::Errno(errno) is returned.
+    /// # Examples
+    /// ```
+    /// use cfile_rs;
+    /// use cfile_rs::CFile;
+    /// use cfile_rs::UPDATE;
+    /// use std::str::from_utf8;
+    /// use std::io::{ Seek, SeekFrom, Read, Write };
+    ///
+    /// // Truncate random access mode will overwrite the old "data.txt" file if it exists.
+    /// let mut file = CFile::open("data.txt", UPDATE).unwrap();
+    /// let _ = file.write_all("Howdy folks".as_bytes());   // Write some data!
+    /// let _ = file.delete();                              // The file is gone!
+    /// ```
     pub fn delete(self) -> Result<(), Error> {
         unsafe {
-            let result = libc::remove(self.path.as_ptr());
+            let path = self.path.clone();
+            drop(self);
+            let result = libc::remove(path.as_ptr());
             if result == 0 {
                 Ok(())
             } else {
-                Err(get_error())
+                get_error()
             }
         }
     }
@@ -170,7 +179,7 @@ impl CFile {
                     self.file_ptr = null_mut::<libc::FILE>() ;
                     Ok(())
                 } else {
-                    Err(get_error())
+                    get_error()
                 }
             } else {
                 Ok(())
@@ -184,32 +193,86 @@ impl CFile {
         &mut (*self.file_ptr)
     }
 
+    /// Returns the current position in the file.
+    /// # Errors
+    /// On error Error::Errno(errno) is returned.
+    pub fn current_pos(&self) -> Result<u64, Error> {
+        unsafe {
+            let pos = libc::ftell(self.file_ptr);
+            if pos != -1 {
+                Ok(pos as u64)
+            } else {
+                get_error()
+            }
+        }
+    }
+
+    /// A utility function to expand a vector without increasing its capacity more than it needs
+    /// to be expanded.
+    fn expand_buffer(buff: &mut Vec<u8>, by: usize) {
+        if buff.capacity() < buff.len() + by {
+            buff.reserve(by);
+        }
+        for _ in 0..by {
+            buff.push(0u8);
+        }
+    }
+}
+
+impl Write for CFile {
+
     /// Attempts to write all of the bytes in buf to the file.
     /// # Errors
     /// If an error occurs during writing, Error::WriteError(bytes_written, errno) will be
     /// returned.
     /// # Examples
     /// ```
-    /// use cfile::CFile;
+    /// use cfile_rs;
+    /// use cfile_rs::CFile;
+    /// use cfile_rs::TRUNCATAE_RANDOM_ACCESS_MODE;
+    /// use std::str::from_utf8;
+    /// use std::io::{ Seek, SeekFrom, Read, Write };
     ///
     /// // Truncate random access mode will overwrite the old "data.txt" file if it exists.
-    /// let file = CFile::open("data.txt", cfile::TRUNCATAE_RANDOM_ACCESS_MODE).unwrap();
-    /// match file.write_all("Howdy folks!".as_bytes()) {
-    ///     Ok(()) => println!("Successfully wrote to the file!"),
-    ///     Err(err) => {
-    ///         let error_str = err.to_cstr();
-    ///         let errno = err.errno();
-    ///         println!("Encountered error {}: {:?}", errno, error_str);
-    ///     }
-    /// };
+    /// let mut file = CFile::open("data.txt", TRUNCATAE_RANDOM_ACCESS_MODE).unwrap();
+    /// let _ = file.write_all("Howdy folks".as_bytes());   // Write some data!
+    ///
     /// ```
-    pub fn write_all(&self, buf: &[u8]) -> Result<(), Error> {
+    fn write_all(&mut self, buf: &[u8]) -> Result<(), Error> {
         unsafe {
             let written_bytes = libc::fwrite(buf.as_ptr() as *const libc::c_void, 1, buf.len(), self.file_ptr);
             if written_bytes != buf.len() {
-                Err(self.get_write_error(written_bytes))
+                get_error()
             } else {
                 Ok(())
+            }
+        }
+    }
+
+    /// Attempts to write all of the bytes in buf to the file.
+    /// # Errors
+    /// If an error occurs during writing, Error::WriteError(bytes_written, errno) will be
+    /// returned.
+    /// # Examples
+    /// ```
+    /// use cfile_rs;
+    /// use cfile_rs::CFile;
+    /// use cfile_rs::TRUNCATAE_RANDOM_ACCESS_MODE;
+    /// use std::str::from_utf8;
+    /// use std::io::{ Seek, SeekFrom, Read, Write };
+    ///
+    /// // Truncate random access mode will overwrite the old "data.txt" file if it exists.
+    /// let mut file = CFile::open("data.txt", TRUNCATAE_RANDOM_ACCESS_MODE).unwrap();
+    /// let _ = file.write("Howdy folks".as_bytes());   // Write some data!
+    ///
+    /// ```
+    fn write(&mut self, buf: &[u8]) -> Result<usize, Error> {
+        unsafe {
+            let written_bytes = libc::fwrite(buf.as_ptr() as *const libc::c_void, 1, buf.len(), self.file_ptr);
+            if written_bytes != buf.len() {
+                get_error()
+            } else {
+                Ok(written_bytes)
             }
         }
     }
@@ -218,65 +281,62 @@ impl CFile {
     /// filesystem.
     /// # Examples
     /// ```
-    /// use cfile::CFile;
+    /// use cfile_rs::CFile;
+    /// use cfile_rs::TRUNCATAE_RANDOM_ACCESS_MODE;
+    /// use std::io::Write;
     /// // Truncate random access mode will overwrite the old "data.txt" file if it exists.
-    /// let file = CFile::open("data.txt", cfile::TRUNCATAE_RANDOM_ACCESS_MODE).unwrap();
+    /// let mut file = CFile::open("data.txt", TRUNCATAE_RANDOM_ACCESS_MODE).unwrap();
     /// match file.write_all("Howdy folks!".as_bytes()) {
     ///     Ok(()) => println!("Successfully wrote to the file!"),
     ///     Err(err) => {
-    ///         let error_str = err.to_cstr();
-    ///         let errno = err.errno();
-    ///         println!("Encountered error {}: {:?}", errno, error_str);
+    ///         println!("Encountered error: {}", err);
     ///     }
     /// };
     /// let _ = file.flush();   // Upon this call, all data waiting in the output
     ///                         // stream will be written to the file
     /// ```
-    pub fn flush(&self) -> Result<(), Error> {
+    fn flush(&mut self) -> Result<(), Error> {
         unsafe {
             let result = libc::fflush(self.file_ptr);
             if result == 0 {
                 Ok(())
             } else {
-                Err(get_error())
+                get_error()
             }
         }
     }
+}
 
+impl Read for CFile {
     /// Reads the entire file starting from the current position, expanding buf as needed. On a successful
     /// read, this function will return Ok(bytes_read).
     /// # Errors
     /// If an error occurs during reading, some varient of error will be returned.
     /// # Examples
     /// ```
-    /// use cfile;
-    /// use cfile::CFile;
-    /// use std::str;
-    /// use std::io::SeekFrom;
+    /// use cfile_rs;
+    /// use cfile_rs::CFile;
+    /// use cfile_rs::TRUNCATAE_RANDOM_ACCESS_MODE;
+    /// use std::str::from_utf8;
+    /// use std::io::{ Seek, SeekFrom, Read, Write };
     ///
-    /// let file = CFile::open("data.txt", cfile::TRUNCATAE_RANDOM_ACCESS_MODE).unwrap();
-    /// match file.write_all("Howdy folks!".as_bytes()) {
-    ///     Ok(()) => println!("Successfully wrote to the file!"),
+    /// // Truncate random access mode will overwrite the old "data.txt" file if it exists.
+    /// let mut file = CFile::open("data.txt", TRUNCATAE_RANDOM_ACCESS_MODE).unwrap();
+    /// let _ = file.write_all("Howdy folks".as_bytes());   // Write some data!
+    /// let _ = file.seek(SeekFrom::Start(0));              // Move back to the beginning of the file
+    /// let mut buffer = cfile_rs::buffer(10);              // Create a buffer (a Vec<u8>) to read into
+    /// match file.read_to_end(&mut buffer) {               // Read the entire file, expanding our buffer as needed
+    ///     Ok(bytes_read) => {
+    ///         // It is a bad idea to do this unless you know it is valid utf8
+    ///         let as_str = from_utf8(&buffer[0..bytes_read]).unwrap();
+    ///         println!("Read '{}' from the file.", as_str);
+    ///     },
     ///     Err(err) => {
-    ///         let error_str = err.to_cstr();
-    ///         let errno = err.errno();
-    ///         println!("Encountered error {}: {:?}", errno, error_str);
+    ///         println!("Encountered error: {}", err);
     ///     }
     /// };
-    /// let _ = file.flush();                       // Probably unnecessary
-    /// let mut buf = cfile::buffer(20);            // 20 will be more than enough to store our data
-    /// let _ = file.seek(SeekFrom::Start(1));      // Move to 1 byte after the beginning of the file
-    /// let result = file.read_to_end(&mut buf);    // Read to the end of the file starting from the 2nd byte
-    /// match result {
-    ///     Ok(bytes_read) => {
-    ///         let data = &buf[0..bytes_read];
-    ///         let str = str::from_utf8(data).unwrap();
-    ///         println!("{}", str);
-    ///     },
-    ///     Err(_) => { /* Handle that error 😉 */ }
-    /// };
     /// ```
-    pub fn read_to_end(&self, buf: &mut Vec<u8>) -> Result<usize, Error> {
+    fn read_to_end(&mut self, buf: &mut Vec<u8>) -> Result<usize, Error> {
         let pos = self.current_pos();
         let _ = self.seek(SeekFrom::End(0));
         let end = self.current_pos();
@@ -296,9 +356,6 @@ impl CFile {
                             Ok(()) => {
                                 Ok(to_read)
                             },
-                            // I don't think this should ever happen
-                            Err(Error::EndOfFile(bytes_read)) => Ok(bytes_read),
-
                             Err(e) => Err(e)
                         }
                     },
@@ -317,43 +374,39 @@ impl CFile {
     /// Upon some other error, Err(Errno(errno)) will be returned.
     /// # Examples
     /// ```
-    /// use cfile;
-    /// use cfile::Error;
-    /// use cfile::CFile;
-    /// use std::str;
-    /// use std::io::SeekFrom;
     ///
-    /// let file = CFile::open("data.txt", cfile::TRUNCATAE_RANDOM_ACCESS_MODE).unwrap();
-    /// match file.write_all("Howdy folks!".as_bytes()) {
-    ///     Ok(()) => println!("Successfully wrote to the file!"),
-    ///     Err(err) => {
-    ///         let error_str = err.to_cstr();
-    ///         let errno = err.errno();
-    ///         println!("Encountered error {}: {:?}", errno, error_str);
-    ///     }
-    /// };
-    /// let _ = file.flush();                       // Probably unnecessary
-    /// let buf_size = 20;
-    /// let mut buf = cfile::buffer(buf_size);      // 20 will be more than enough to store our data
-    /// let _ = file.seek(SeekFrom::Start(0));      // Move to 1 byte after the beginning of the file
-    /// let result = file.read_exact(&mut buf);     // Read exactly 20 bytes
-    /// match result {
-    ///     Ok(()) => {                     // This won't happen since we only wrote 12 bytes,
-    ///         let data = &buf[0..buf_size];       // but if it did this is how we could print the data
-    ///                                             // as a string.
-    ///         let str = str::from_utf8(data).unwrap();
-    ///         println!("{}", str);
-    ///     },
-    ///     Err(Error::EndOfFile(bytes_read)) => {
-    ///         // Oh no! There weren't enough bytes left to fill our buf! We did get some data though.
-    ///         let data = &buf[0..bytes_read];
-    ///         let str = str::from_utf8(data).unwrap();
-    ///         println!("{}", str);
-    ///     },
-    ///     _ => { /* Some other error happened 😢 */ }
-    /// };
     /// ```
-    pub fn read_exact(&self, buf: &mut [u8]) -> Result<(), Error> {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize, Error> {
+        unsafe {
+            let result = libc::fread(buf.as_ptr() as *mut libc::c_void, 1, buf.len(), self.file_ptr);
+            if result != buf.len() {
+                match get_error::<u8>() {
+                    Err(err) => {
+                        if err.kind() == ErrorKind::UnexpectedEof {
+                            Ok(result)
+                        } else {
+                            Err(err)
+                        }
+                    },
+                    Ok(_) => panic!("This is impossible")
+                }
+            } else {
+                Ok(result)
+            }
+        }
+    }
+
+    /// Reads exactly the number of bytes required to fill buf.
+    /// # Errors
+    /// If the end of the file is reached before buf is filled, Err(EndOfFile(bytes_read)) will be
+    /// returned. The data that was read before that will still have been placed into buf.
+    ///
+    /// Upon some other error, Err(Errno(errno)) will be returned.
+    /// # Examples
+    /// ```
+    ///
+    /// ```
+    fn read_exact(&mut self, buf: &mut [u8]) -> Result<(), Error> {
         unsafe {
             let result = libc::fread(buf.as_ptr() as *mut libc::c_void, 1, buf.len(), self.file_ptr);
             if result == buf.len() {
@@ -361,39 +414,33 @@ impl CFile {
             } else {
                 // Check if we hit the end of the file
                 if libc::feof(self.file_ptr) != 0 {
-                    Err(Error::EndOfFile(result as usize))
+                    get_error()
                 } else {
-                    Err(get_error())
+                    get_error()
                 }
             }
         }
     }
+}
 
-    /// Returns the current position in the file.
-    /// # Errors
-    /// On error Error::Errno(errno) is returned.
-    pub fn current_pos(&self) -> Result<u64, Error> {
-        unsafe {
-            let pos = libc::ftell(self.file_ptr);
-            if pos != -1 {
-                Ok(pos as u64)
-            } else {
-                Err(get_error())
-            }
-        }
-    }
-
+impl Seek for CFile {
     /// Changes the current position in the file using the SeekFrom enum.
     ///
     /// To set relative to the beginning of the file (i.e. index is 0 + offset):
-    ///     SeekFrom::Start(offset)
+    /// ```
+    /// SeekFrom::Start(offset)
+    /// ```
     /// To set relative to the end of the file (i.e. index is file_lenth - 1 - offset):
-    ///     SeekFrom::End(offset)
+    /// ```
+    /// SeekFrom::End(offset)
+    /// ```
     /// To set relative to the current position:
-    ///     SeekFrom::End(offset)
+    /// ```
+    /// SeekFrom::End(offset)
+    /// ```
     /// # Errors
     /// On error Error::Errno(errno) is returned.
-    pub fn seek(&self, pos: SeekFrom) -> Result<u64, Error> {
+    fn seek(&mut self, pos: SeekFrom) -> Result<u64, Error> {
         unsafe {
             let result = match pos {
                 SeekFrom::Start(from) =>
@@ -406,27 +453,9 @@ impl CFile {
             if result == 0 {
                 self.current_pos()
             } else {
-                Err(get_error())
+                get_error()
             }
         }
-    }
-
-    /// A utility function to expand a vector without increasing its capacity more than it needs
-    /// to be expanded.
-    fn expand_buffer(buff: &mut Vec<u8>, by: usize) {
-        if buff.capacity() < buff.len() + by {
-            buff.reserve(by);
-        }
-        for _ in 0..by {
-            buff.push(0u8);
-        }
-    }
-
-    /// A utility function that pulls the error given from ferror. It is only used to find
-    /// errors from writing so it is stuck into an Error::WriteError. Additionally, the number
-    /// of bytes successfully written is also added.
-    unsafe fn get_write_error(&self, bytes_written: usize) -> Error {
-        Error::WriteError(bytes_written, libc::ferror(self.file_ptr) as u64)
     }
 }
 
@@ -440,7 +469,7 @@ impl Drop for CFile {
                     self.file_ptr = null_mut::<libc::FILE>() ;
                     Ok(())
                 } else {
-                    Err(get_error())
+                    get_error()
                 }
             } else {
                 Ok(())

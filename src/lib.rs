@@ -22,30 +22,25 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #![feature(libc)]
 extern crate libc;
 
-pub mod error;
-pub use error::*;
-
 pub mod cfile;
 pub use cfile::*;
-
 
 #[cfg(test)]
 mod tests {
     use std::str;
     use cfile;
     use cfile::*;
-    use error::Error;
     use std::io::SeekFrom;
-
+    use std::io::Write;
+    use std::io::Read;
+    use std::io::Seek;
     #[test]
     fn file_flush() {
-        let file = CFile::open("data.txt", TRUNCATAE_RANDOM_ACCESS_MODE).unwrap();
+        let mut file = CFile::open("data.txt", TRUNCATAE_RANDOM_ACCESS_MODE).unwrap();
         match file.write_all("Howdy folks!".as_bytes()) {
             Ok(()) => println!("Successfully wrote to the file!"),
-            Err(err) => {
-                let error_str = err.to_cstr();
-                let errno = err.errno();
-                println!("Encountered error {}: {:?}", errno, error_str);
+            Err(e) => {
+                // darn
             }
         };
         let _ = file.flush();                       // Probably unnecessary
@@ -60,13 +55,9 @@ mod tests {
                 let str = str::from_utf8(data).unwrap();
                 println!("{}", str);
             },
-            Err(Error::EndOfFile(bytes_read)) => {
-                // Oh no! There weren't enough bytes left to fill our buf! We did get some data though.
-                let data = &buf[0..bytes_read];
-                let str = str::from_utf8(data).unwrap();
-                println!("{}", str);
+            Err(e) => {
+                // Oh no!
             },
-            _ => { /* Some other error happened 😢 */ }
         };
     }
 }
