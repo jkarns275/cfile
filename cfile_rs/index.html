@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `cfile_rs` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, cfile_rs">
+
+    <title>cfile_rs - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'></p><script>window.sidebarCurrent = {name: 'cfile_rs', ty: 'mod', relpath: '../'};</script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Crate <a class="mod" href=''>cfile_rs</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../src/cfile_rs/lib.rs.html#21-523' title='goto source code'>[src]</a></span></h1>
+<h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.CFile.html"
+                                  title='struct cfile_rs::CFile'>CFile</a></td>
+                           <td class='docblock-short'>
+                                <p>A wrapper around C&#39;s file type.
+Attempts to mimic the functionality if rust&#39;s std::fs::File while still allowing complete
+control of all I/O operations.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Error.html"
+                                  title='struct cfile_rs::Error'>Error</a></td>
+                           <td class='docblock-short'>
+                                <p>The error type for I/O operations of the <code>Read</code>, <code>Write</code>, <code>Seek</code>, and
+associated traits.</p>
+                           </td>
+                       </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.ErrorKind.html"
+                                  title='enum cfile_rs::ErrorKind'>ErrorKind</a></td>
+                           <td class='docblock-short'>
+                                <p>A list specifying general categories of I/O error.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.SeekFrom.html"
+                                  title='enum cfile_rs::SeekFrom'>SeekFrom</a></td>
+                           <td class='docblock-short'>
+                                <p>Enumeration of possible methods to seek within an I/O object.</p>
+                           </td>
+                       </tr></table><h2 id='statics' class='section-header'><a href="#statics">Statics</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="static" href="static.APPEND_ONLY.html"
+                                  title='static cfile_rs::APPEND_ONLY'>APPEND_ONLY</a></td>
+                           <td class='docblock-short'>
+                                <p>A &amp;&#39;static str to be passed into the CFile::open method. It will only allow data to be appended to the
+end of the file.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="static" href="static.APPEND_READ.html"
+                                  title='static cfile_rs::APPEND_READ'>APPEND_READ</a></td>
+                           <td class='docblock-short'>
+                                <p>A &amp;&#39;static str to be passed into the CFile::open method. It will allow data to be appended to the end of
+the file, and data to be read from the file. It will create the file if it doesn&#39;t exist.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="static" href="static.RANDOM_ACCESS_MODE.html"
+                                  title='static cfile_rs::RANDOM_ACCESS_MODE'>RANDOM_ACCESS_MODE</a></td>
+                           <td class='docblock-short'>
+                                <p>A &amp;&#39;static str to be passed into the CFile::open method. It will open the file in a way that will allow
+reading and writing, including overwriting old data. It will not create the file if it does not exist.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="static" href="static.READ_ONLY.html"
+                                  title='static cfile_rs::READ_ONLY'>READ_ONLY</a></td>
+                           <td class='docblock-short'>
+                                <p>A &amp;&#39;static str to be passed into the CFile::open method. It will only allow reading.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="static" href="static.TRUNCATAE_RANDOM_ACCESS_MODE.html"
+                                  title='static cfile_rs::TRUNCATAE_RANDOM_ACCESS_MODE'>TRUNCATAE_RANDOM_ACCESS_MODE</a></td>
+                           <td class='docblock-short'>
+                                <p>A &amp;&#39;static str to be passed into the CFile::open method. It will open the file in a way that will allow
+reading and writing, including overwriting old data. It will create the file if it doesn&#39;t exist</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="static" href="static.UPDATE.html"
+                                  title='static cfile_rs::UPDATE'>UPDATE</a></td>
+                           <td class='docblock-short'>
+                                <p>A &amp;&#39;static str to be passed into the CFile::open method. It will open the file in a way that will allow
+reading and writing, including overwriting old data</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="static" href="static.WRITE_ONLY.html"
+                                  title='static cfile_rs::WRITE_ONLY'>WRITE_ONLY</a></td>
+                           <td class='docblock-short'>
+                                <p>A &amp;&#39;static str to be passed into the CFile::open method. It will only allow writing.</p>
+                           </td>
+                       </tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.Read.html"
+                                  title='trait cfile_rs::Read'>Read</a></td>
+                           <td class='docblock-short'>
+                                <p>The <code>Read</code> trait allows for reading bytes from a source.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.Seek.html"
+                                  title='trait cfile_rs::Seek'>Seek</a></td>
+                           <td class='docblock-short'>
+                                <p>The <code>Seek</code> trait provides a cursor which can be moved within a stream of
+bytes.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.Write.html"
+                                  title='trait cfile_rs::Write'>Write</a></td>
+                           <td class='docblock-short'>
+                                <p>A trait for objects which are byte-oriented sinks.</p>
+                           </td>
+                       </tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.buffer.html"
+                                  title='fn cfile_rs::buffer'>buffer</a></td>
+                           <td class='docblock-short'>
+                                <p>A utility function that creates a &quot;buffer&quot; of len bytes.
+A Vec is used because it is memory safe and has a bunch of useful functionality (duh).</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.chmod.html"
+                                  title='fn cfile_rs::chmod'>chmod</a></td>
+                           <td class='docblock-short'>
+                                <p>A utility function to change read/write/execute permissions of a file.</p>
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "cfile_rs";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

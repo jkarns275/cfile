@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `CFile` struct in crate `cfile_rs`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, CFile">
+
+    <title>cfile_rs::CFile - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='index.html'>cfile_rs</a></p><script>window.sidebarCurrent = {name: 'CFile', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>cfile_rs</a>::<wbr><a class="struct" href=''>CFile</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../src/cfile_rs/lib.rs.html#79-82' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct CFile {
+    pub path: <a class="struct" href="https://doc.rust-lang.org/nightly/std/ffi/c_str/struct.CString.html" title="struct std::ffi::c_str::CString">CString</a>,
+    // some fields omitted
+}</pre><div class='docblock'><p>A wrapper around C&#39;s file type.
+Attempts to mimic the functionality if rust&#39;s std::fs::File while still allowing complete
+control of all I/O operations.</p>
+</div><h2 class='fields'>Fields</h2><span id='structfield.path' class="structfield">
+                           <span id='path.v' class='invisible'>
+                           <code>path: <a class="struct" href="https://doc.rust-lang.org/nightly/std/ffi/c_str/struct.CString.html" title="struct std::ffi::c_str::CString">CString</a></code>
+                           </span></span><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl <a class="struct" href="../cfile_rs/struct.CFile.html" title="struct cfile_rs::CFile">CFile</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/cfile_rs/lib.rs.html#84-223' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.open_random_access' class="method"><span id='open_random_access.v' class='invisible'><code>fn <a href='#method.open_random_access' class='fnname'>open_random_access</a>&lt;P:&nbsp;<a class="trait" href="https://doc.rust-lang.org/nightly/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="struct" href="https://doc.rust-lang.org/nightly/std/path/struct.Path.html" title="struct std::path::Path">Path</a>&gt;&gt;(path: P) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="../cfile_rs/struct.CFile.html" title="struct cfile_rs::CFile">CFile</a>, <a class="struct" href="../cfile_rs/struct.Error.html" title="struct cfile_rs::Error">Error</a>&gt;</code></span></h4>
+<div class='docblock'><p>Attempts to open a file in random access mode (i.e. rb+). However, unlike rb+, if the file
+doesn&#39;t exist, it will be created. To avoid createion, simply call CFile::open(path, &quot;rb+&quot;),
+which will return an error if the file doesn&#39;t exist.</p>
+
+<h1 id='failure' class='section-header'><a href='#failure'>Failure</a></h1>
+<p>This function will return Err for a whole bunch of reasons, the errno id will be returned
+as an Error::Errno(u64). For more information on what that number actually means see</p>
+</div><h4 id='method.create_file' class="method"><span id='create_file.v' class='invisible'><code>fn <a href='#method.create_file' class='fnname'>create_file</a>&lt;P:&nbsp;<a class="trait" href="https://doc.rust-lang.org/nightly/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="struct" href="https://doc.rust-lang.org/nightly/std/path/struct.Path.html" title="struct std::path::Path">Path</a>&gt;&gt;(path: &amp;P) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">()</a>, <a class="struct" href="../cfile_rs/struct.Error.html" title="struct cfile_rs::Error">Error</a>&gt;</code></span></h4>
+<div class='docblock'><p>Attempts to create a file, and then immedietly close it. If the file already exists, this
+function will not do anything. If the file does exist, then it will be created with no
+and nothing more (it will be empty).</p>
+</div><h4 id='method.open' class="method"><span id='open.v' class='invisible'><code>fn <a href='#method.open' class='fnname'>open</a>&lt;P:&nbsp;<a class="trait" href="https://doc.rust-lang.org/nightly/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="struct" href="https://doc.rust-lang.org/nightly/std/path/struct.Path.html" title="struct std::path::Path">Path</a>&gt;&gt;(path: P, mode: &amp;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="../cfile_rs/struct.CFile.html" title="struct cfile_rs::CFile">CFile</a>, <a class="struct" href="../cfile_rs/struct.Error.html" title="struct cfile_rs::Error">Error</a>&gt;</code></span></h4>
+<div class='docblock'><p>Attempt to open the file with path p.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1>
+<pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">cfile_rs</span>;
+<span class="kw">use</span> <span class="ident">cfile_rs</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident">cfile_rs</span>::<span class="ident">CFile</span>;
+<span class="kw">use</span> <span class="ident">cfile_rs</span>::<span class="ident">TRUNCATAE_RANDOM_ACCESS_MODE</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">from_utf8</span>;
+
+<span class="comment">// Truncate random access mode will overwrite the old &quot;data.txt&quot; file if it exists.</span>
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">CFile</span>::<span class="ident">open</span>(<span class="string">&quot;data.txt&quot;</span>, <span class="ident">TRUNCATAE_RANDOM_ACCESS_MODE</span>).<span class="ident">unwrap</span>();</pre>
+</div><h4 id='method.delete' class="method"><span id='delete.v' class='invisible'><code>fn <a href='#method.delete' class='fnname'>delete</a>(self) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">()</a>, <a class="struct" href="../cfile_rs/struct.Error.html" title="struct cfile_rs::Error">Error</a>&gt;</code></span></h4>
+<div class='docblock'><p>Deletes the file from the filesystem, and consumes the object.</p>
+
+<h1 id='errors' class='section-header'><a href='#errors'>Errors</a></h1>
+<p>On error Error::Errno(errno) is returned.</p>
+
+<h1 id='examples-1' class='section-header'><a href='#examples-1'>Examples</a></h1>
+<pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">cfile_rs</span>;
+<span class="kw">use</span> <span class="ident">cfile_rs</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident">cfile_rs</span>::<span class="ident">CFile</span>;
+<span class="kw">use</span> <span class="ident">cfile_rs</span>::<span class="ident">UPDATE</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">from_utf8</span>;
+
+<span class="comment">// Truncate random access mode will overwrite the old &quot;data.txt&quot; file if it exists.</span>
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">CFile</span>::<span class="ident">open</span>(<span class="string">&quot;data.txt&quot;</span>, <span class="ident">UPDATE</span>).<span class="ident">unwrap</span>();
+<span class="kw">let</span> _ <span class="op">=</span> <span class="ident">file</span>.<span class="ident">write_all</span>(<span class="string">&quot;Howdy folks&quot;</span>.<span class="ident">as_bytes</span>());   <span class="comment">// Write some data!</span>
+<span class="kw">let</span> _ <span class="op">=</span> <span class="ident">file</span>.<span class="ident">delete</span>();                              <span class="comment">// The file is gone!</span></pre>
+</div><h4 id='method.close' class="method"><span id='close.v' class='invisible'><code>fn <a href='#method.close' class='fnname'>close</a>(self) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">()</a>, <a class="struct" href="../cfile_rs/struct.Error.html" title="struct cfile_rs::Error">Error</a>&gt;</code></span></h4>
+<div class='docblock'><p>Attempts to close the file. Consumes the file as well</p>
+
+<h1 id='errors-1' class='section-header'><a href='#errors-1'>Errors</a></h1>
+<p>On error Error::Errno(errno) is returned.</p>
+</div><h4 id='method.file' class="method"><span id='file.v' class='invisible'><code>unsafe fn <a href='#method.file' class='fnname'>file</a>&lt;'a&gt;(&amp;'a mut self) -&gt; &amp;'a mut <a class="enum" href="https://doc.rust-lang.org/libc/x86_64-unknown-linux-gnu/libc/enum.FILE.html" title="enum libc::FILE">FILE</a></code></span></h4>
+<div class='docblock'><p>Returns the underlying file pointer as a reference. It is returned as a reference to, in theory,
+prevent it from being used after the file is closed.</p>
+</div><h4 id='method.current_pos' class="method"><span id='current_pos.v' class='invisible'><code>fn <a href='#method.current_pos' class='fnname'>current_pos</a>(&amp;self) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u64.html">u64</a>, <a class="struct" href="../cfile_rs/struct.Error.html" title="struct cfile_rs::Error">Error</a>&gt;</code></span></h4>
+<div class='docblock'><p>Returns the current position in the file.</p>
+
+<h1 id='errors-2' class='section-header'><a href='#errors-2'>Errors</a></h1>
+<p>On error Error::Errno(errno) is returned.</p>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><span class='in-band'><code>impl <a class="trait" href="../cfile_rs/trait.Write.html" title="trait cfile_rs::Write">Write</a> for <a class="struct" href="../cfile_rs/struct.CFile.html" title="struct cfile_rs::CFile">CFile</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/cfile_rs/lib.rs.html#225-314' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.write_all' class="method"><span id='write_all.v' class='invisible'><code>fn <a href='../cfile_rs/trait.Write.html#method.write_all' class='fnname'>write_all</a>(&amp;mut self, buf: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">&amp;[</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">]</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">()</a>, <a class="struct" href="../cfile_rs/struct.Error.html" title="struct cfile_rs::Error">Error</a>&gt;</code></span></h4>
+<div class='docblock'><p>Attempts to write all of the bytes in buf to the file.</p>
+
+<h1 id='errors-3' class='section-header'><a href='#errors-3'>Errors</a></h1>
+<p>If an error occurs during writing, Error::WriteError(bytes_written, errno) will be
+returned.</p>
+
+<h1 id='examples-2' class='section-header'><a href='#examples-2'>Examples</a></h1>
+<pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">cfile_rs</span>;
+<span class="kw">use</span> <span class="ident">cfile_rs</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident">cfile_rs</span>::<span class="ident">CFile</span>;
+<span class="kw">use</span> <span class="ident">cfile_rs</span>::<span class="ident">TRUNCATAE_RANDOM_ACCESS_MODE</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">from_utf8</span>;
+
+<span class="comment">// Truncate random access mode will overwrite the old &quot;data.txt&quot; file if it exists.</span>
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">CFile</span>::<span class="ident">open</span>(<span class="string">&quot;data.txt&quot;</span>, <span class="ident">TRUNCATAE_RANDOM_ACCESS_MODE</span>).<span class="ident">unwrap</span>();
+<span class="kw">let</span> _ <span class="op">=</span> <span class="ident">file</span>.<span class="ident">write_all</span>(<span class="string">&quot;Howdy folks&quot;</span>.<span class="ident">as_bytes</span>());   <span class="comment">// Write some data!</span>
+</pre>
+</div><h4 id='method.write' class="method"><span id='write.v' class='invisible'><code>fn <a href='../cfile_rs/trait.Write.html#tymethod.write' class='fnname'>write</a>(&amp;mut self, buf: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">&amp;[</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">]</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, <a class="struct" href="../cfile_rs/struct.Error.html" title="struct cfile_rs::Error">Error</a>&gt;</code></span></h4>
+<div class='docblock'><p>Attempts to write all of the bytes in buf to the file.</p>
+
+<h1 id='errors-4' class='section-header'><a href='#errors-4'>Errors</a></h1>
+<p>If an error occurs during writing, Error::WriteError(bytes_written, errno) will be
+returned.</p>
+
+<h1 id='examples-3' class='section-header'><a href='#examples-3'>Examples</a></h1>
+<pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">cfile_rs</span>;
+<span class="kw">use</span> <span class="ident">cfile_rs</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident">cfile_rs</span>::<span class="ident">CFile</span>;
+<span class="kw">use</span> <span class="ident">cfile_rs</span>::<span class="ident">TRUNCATAE_RANDOM_ACCESS_MODE</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">from_utf8</span>;
+
+<span class="comment">// Truncate random access mode will overwrite the old &quot;data.txt&quot; file if it exists.</span>
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">CFile</span>::<span class="ident">open</span>(<span class="string">&quot;data.txt&quot;</span>, <span class="ident">TRUNCATAE_RANDOM_ACCESS_MODE</span>).<span class="ident">unwrap</span>();
+<span class="kw">let</span> _ <span class="op">=</span> <span class="ident">file</span>.<span class="ident">write</span>(<span class="string">&quot;Howdy folks&quot;</span>.<span class="ident">as_bytes</span>());   <span class="comment">// Write some data!</span>
+</pre>
+</div><h4 id='method.flush' class="method"><span id='flush.v' class='invisible'><code>fn <a href='../cfile_rs/trait.Write.html#tymethod.flush' class='fnname'>flush</a>(&amp;mut self) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">()</a>, <a class="struct" href="../cfile_rs/struct.Error.html" title="struct cfile_rs::Error">Error</a>&gt;</code></span></h4>
+<div class='docblock'><p>Flushes the underlying output stream, meaning it actually writes everything to the
+filesystem.</p>
+
+<h1 id='examples-4' class='section-header'><a href='#examples-4'>Examples</a></h1>
+<pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">cfile_rs</span>;
+<span class="kw">use</span> <span class="ident">cfile_rs</span>::<span class="ident">SeekFrom</span>;
+<span class="kw">use</span> <span class="ident">cfile_rs</span>::<span class="ident">CFile</span>;
+<span class="kw">use</span> <span class="ident">cfile_rs</span>::<span class="ident">TRUNCATAE_RANDOM_ACCESS_MODE</span>;
+<span class="kw">use</span> <span class="ident">cfile_rs</span>::<span class="kw-2">*</span>;
+
+<span class="comment">// Truncate random access mode will overwrite the old &quot;data.txt&quot; file if it exists.</span>
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">CFile</span>::<span class="ident">open</span>(<span class="string">&quot;data.txt&quot;</span>, <span class="ident">TRUNCATAE_RANDOM_ACCESS_MODE</span>).<span class="ident">unwrap</span>();
+<span class="kw">match</span> <span class="ident">file</span>.<span class="ident">write_all</span>(<span class="string">&quot;Howdy folks!&quot;</span>.<span class="ident">as_bytes</span>()) {
+    <span class="prelude-val">Ok</span>(()) <span class="op">=&gt;</span> <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Successfully wrote to the file!&quot;</span>),
+    <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=&gt;</span> {
+        <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Encountered error: {}&quot;</span>, <span class="ident">err</span>);
+    }
+};
+<span class="kw">let</span> _ <span class="op">=</span> <span class="ident">file</span>.<span class="ident">flush</span>();   <span class="comment">// Upon this call, all data waiting in the output</span>
+                        <span class="comment">// stream will be written to the file</span></pre>
+</div><h4 id='method.write_fmt' class="method"><span id='write_fmt.v' class='invisible'><code>fn <a href='../cfile_rs/trait.Write.html#method.write_fmt' class='fnname'>write_fmt</a>(&amp;mut self, fmt: <a class="struct" href="https://doc.rust-lang.org/nightly/core/fmt/struct.Arguments.html" title="struct core::fmt::Arguments">Arguments</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">()</a>, <a class="struct" href="../cfile_rs/struct.Error.html" title="struct cfile_rs::Error">Error</a>&gt;</code><div class='since' title='Stable since Rust version 1.0.0'>1.0.0</div></span></h4>
+<div class='docblock'><p>Writes a formatted string into this writer, returning any error encountered. <a href="../cfile_rs/trait.Write.html#method.write_fmt">Read more</a></p>
+</div><h4 id='method.by_ref' class="method"><span id='by_ref.v' class='invisible'><code>fn <a href='../cfile_rs/trait.Write.html#method.by_ref' class='fnname'>by_ref</a>(&amp;mut self) -&gt; &amp;mut Self</code><div class='since' title='Stable since Rust version 1.0.0'>1.0.0</div></span></h4>
+<div class='docblock'><p>Creates a &quot;by reference&quot; adaptor for this instance of <code>Write</code>. <a href="../cfile_rs/trait.Write.html#method.by_ref">Read more</a></p>
+</div></div><h3 class='impl'><span class='in-band'><code>impl <a class="trait" href="../cfile_rs/trait.Read.html" title="trait cfile_rs::Read">Read</a> for <a class="struct" href="../cfile_rs/struct.CFile.html" title="struct cfile_rs::CFile">CFile</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/cfile_rs/lib.rs.html#316-430' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.read_to_end' class="method"><span id='read_to_end.v' class='invisible'><code>fn <a href='../cfile_rs/trait.Read.html#method.read_to_end' class='fnname'>read_to_end</a>(&amp;mut self, buf: &amp;mut <a class="struct" href="https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html" title="struct collections::vec::Vec">Vec</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a>&gt;) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, <a class="struct" href="../cfile_rs/struct.Error.html" title="struct cfile_rs::Error">Error</a>&gt;</code></span></h4>
+<div class='docblock'><p>Reads the entire file starting from the current position, expanding buf as needed. On a successful
+read, this function will return Ok(bytes_read).</p>
+
+<h1 id='errors-5' class='section-header'><a href='#errors-5'>Errors</a></h1>
+<p>If an error occurs during reading, some varient of error will be returned.</p>
+
+<h1 id='examples-5' class='section-header'><a href='#examples-5'>Examples</a></h1>
+<pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">cfile_rs</span>;
+<span class="kw">use</span> <span class="ident">cfile_rs</span>::<span class="ident">CFile</span>;
+<span class="kw">use</span> <span class="ident">cfile_rs</span>::<span class="ident">TRUNCATAE_RANDOM_ACCESS_MODE</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">from_utf8</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::{ <span class="ident">Seek</span>, <span class="ident">SeekFrom</span>, <span class="ident">Read</span>, <span class="ident">Write</span> };
+
+<span class="comment">// Truncate random access mode will overwrite the old &quot;data.txt&quot; file if it exists.</span>
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">CFile</span>::<span class="ident">open</span>(<span class="string">&quot;data.txt&quot;</span>, <span class="ident">TRUNCATAE_RANDOM_ACCESS_MODE</span>).<span class="ident">unwrap</span>();
+<span class="kw">let</span> _ <span class="op">=</span> <span class="ident">file</span>.<span class="ident">write_all</span>(<span class="string">&quot;Howdy folks&quot;</span>.<span class="ident">as_bytes</span>());   <span class="comment">// Write some data!</span>
+<span class="kw">let</span> _ <span class="op">=</span> <span class="ident">file</span>.<span class="ident">seek</span>(<span class="ident">SeekFrom</span>::<span class="ident">Start</span>(<span class="number">0</span>));              <span class="comment">// Move back to the beginning of the file</span>
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer</span> <span class="op">=</span> <span class="ident">cfile_rs</span>::<span class="ident">buffer</span>(<span class="number">10</span>);              <span class="comment">// Create a buffer (a Vec&lt;u8&gt;) to read into</span>
+<span class="kw">match</span> <span class="ident">file</span>.<span class="ident">read_to_end</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buffer</span>) {               <span class="comment">// Read the entire file, expanding our buffer as needed</span>
+    <span class="prelude-val">Ok</span>(<span class="ident">bytes_read</span>) <span class="op">=&gt;</span> {
+        <span class="comment">// It is a bad idea to do this unless you know it is valid utf8</span>
+        <span class="kw">let</span> <span class="ident">as_str</span> <span class="op">=</span> <span class="ident">from_utf8</span>(<span class="kw-2">&amp;</span><span class="ident">buffer</span>[<span class="number">0</span>..<span class="ident">bytes_read</span>]).<span class="ident">unwrap</span>();
+        <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Read &#39;{}&#39; from the file.&quot;</span>, <span class="ident">as_str</span>);
+    },
+    <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=&gt;</span> {
+        <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Encountered error: {}&quot;</span>, <span class="ident">err</span>);
+    }
+};</pre>
+</div><h4 id='method.read' class="method"><span id='read.v' class='invisible'><code>fn <a href='../cfile_rs/trait.Read.html#tymethod.read' class='fnname'>read</a>(&amp;mut self, buf: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">&amp;mut [</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">]</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, <a class="struct" href="../cfile_rs/struct.Error.html" title="struct cfile_rs::Error">Error</a>&gt;</code></span></h4>
+<div class='docblock'><p>Reads exactly the number of bytes required to fill buf.</p>
+
+<h1 id='errors-6' class='section-header'><a href='#errors-6'>Errors</a></h1>
+<p>If the end of the file is reached before buf is filled, Err(EndOfFile(bytes_read)) will be
+returned. The data that was read before that will still have been placed into buf.</p>
+
+<p>Upon some other error, Err(Errno(errno)) will be returned.</p>
+
+<h1 id='examples-6' class='section-header'><a href='#examples-6'>Examples</a></h1>
+<pre class="rust rust-example-rendered">
+</pre>
+</div><h4 id='method.read_exact' class="method"><span id='read_exact.v' class='invisible'><code>fn <a href='../cfile_rs/trait.Read.html#method.read_exact' class='fnname'>read_exact</a>(&amp;mut self, buf: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">&amp;mut [</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">]</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">()</a>, <a class="struct" href="../cfile_rs/struct.Error.html" title="struct cfile_rs::Error">Error</a>&gt;</code></span></h4>
+<div class='docblock'><p>Reads exactly the number of bytes required to fill buf.</p>
+
+<h1 id='errors-7' class='section-header'><a href='#errors-7'>Errors</a></h1>
+<p>If the end of the file is reached before buf is filled, Err(EndOfFile(bytes_read)) will be
+returned. The data that was read before that will still have been placed into buf.</p>
+
+<p>Upon some other error, Err(Errno(errno)) will be returned.</p>
+
+<h1 id='examples-7' class='section-header'><a href='#examples-7'>Examples</a></h1>
+<pre class="rust rust-example-rendered">
+</pre>
+</div><h4 id='method.read_to_string' class="method"><span id='read_to_string.v' class='invisible'><code>fn <a href='../cfile_rs/trait.Read.html#method.read_to_string' class='fnname'>read_to_string</a>(&amp;mut self, buf: &amp;mut <a class="struct" href="https://doc.rust-lang.org/nightly/collections/string/struct.String.html" title="struct collections::string::String">String</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, <a class="struct" href="../cfile_rs/struct.Error.html" title="struct cfile_rs::Error">Error</a>&gt;</code><div class='since' title='Stable since Rust version 1.0.0'>1.0.0</div></span></h4>
+<div class='docblock'><p>Read all bytes until EOF in this source, placing them into <code>buf</code>. <a href="../cfile_rs/trait.Read.html#method.read_to_string">Read more</a></p>
+</div><h4 id='method.by_ref-1' class="method"><span id='by_ref.v-1' class='invisible'><code>fn <a href='../cfile_rs/trait.Read.html#method.by_ref' class='fnname'>by_ref</a>(&amp;mut self) -&gt; &amp;mut Self</code><div class='since' title='Stable since Rust version 1.0.0'>1.0.0</div></span></h4>
+<div class='docblock'><p>Creates a &quot;by reference&quot; adaptor for this instance of <code>Read</code>. <a href="../cfile_rs/trait.Read.html#method.by_ref">Read more</a></p>
+</div><h4 id='method.bytes' class="method"><span id='bytes.v' class='invisible'><code>fn <a href='../cfile_rs/trait.Read.html#method.bytes' class='fnname'>bytes</a>(self) -&gt; <a class="struct" href="https://doc.rust-lang.org/nightly/std/io/struct.Bytes.html" title="struct std::io::Bytes">Bytes</a>&lt;Self&gt;</code><div class='since' title='Stable since Rust version 1.0.0'>1.0.0</div></span></h4>
+<div class='docblock'><p>Transforms this <code>Read</code> instance to an <code>Iterator</code> over its bytes. <a href="../cfile_rs/trait.Read.html#method.bytes">Read more</a></p>
+</div><h4 id='method.chars' class="method"><span id='chars.v' class='invisible'><code>fn <a href='../cfile_rs/trait.Read.html#method.chars' class='fnname'>chars</a>(self) -&gt; <a class="struct" href="https://doc.rust-lang.org/nightly/std/io/struct.Chars.html" title="struct std::io::Chars">Chars</a>&lt;Self&gt;</code></span></h4>
+<div class='stability'><div class='stab unstable'><details><summary><span class=microscope>🔬</span> This is a nightly-only experimental API.  (<code>io</code>)</summary><p>the semantics of a partial read/write of where errors happen is currently unclear and may change</p>
+</details></div></div><div class='docblock'><p>Transforms this <code>Read</code> instance to an <code>Iterator</code> over <code>char</code>s. <a href="../cfile_rs/trait.Read.html#method.chars">Read more</a></p>
+</div><h4 id='method.chain' class="method"><span id='chain.v' class='invisible'><code>fn <a href='../cfile_rs/trait.Read.html#method.chain' class='fnname'>chain</a>&lt;R&gt;(self, next: R) -&gt; <a class="struct" href="https://doc.rust-lang.org/nightly/std/io/struct.Chain.html" title="struct std::io::Chain">Chain</a>&lt;Self, R&gt; <span class="where fmt-newline">where R: <a class="trait" href="../cfile_rs/trait.Read.html" title="trait cfile_rs::Read">Read</a></span></code><div class='since' title='Stable since Rust version 1.0.0'>1.0.0</div></span></h4>
+<div class='docblock'><p>Creates an adaptor which will chain this stream with another. <a href="../cfile_rs/trait.Read.html#method.chain">Read more</a></p>
+</div><h4 id='method.take' class="method"><span id='take.v' class='invisible'><code>fn <a href='../cfile_rs/trait.Read.html#method.take' class='fnname'>take</a>(self, limit: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u64.html">u64</a>) -&gt; <a class="struct" href="https://doc.rust-lang.org/nightly/std/io/struct.Take.html" title="struct std::io::Take">Take</a>&lt;Self&gt;</code><div class='since' title='Stable since Rust version 1.0.0'>1.0.0</div></span></h4>
+<div class='docblock'><p>Creates an adaptor which will read at most <code>limit</code> bytes from it. <a href="../cfile_rs/trait.Read.html#method.take">Read more</a></p>
+</div></div><h3 class='impl'><span class='in-band'><code>impl <a class="trait" href="../cfile_rs/trait.Seek.html" title="trait cfile_rs::Seek">Seek</a> for <a class="struct" href="../cfile_rs/struct.CFile.html" title="struct cfile_rs::CFile">CFile</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/cfile_rs/lib.rs.html#432-466' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.seek' class="method"><span id='seek.v' class='invisible'><code>fn <a href='../cfile_rs/trait.Seek.html#tymethod.seek' class='fnname'>seek</a>(&amp;mut self, pos: <a class="enum" href="../cfile_rs/enum.SeekFrom.html" title="enum cfile_rs::SeekFrom">SeekFrom</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u64.html">u64</a>, <a class="struct" href="../cfile_rs/struct.Error.html" title="struct cfile_rs::Error">Error</a>&gt;</code></span></h4>
+<div class='docblock'><p>Changes the current position in the file using the SeekFrom enum.</p>
+
+<p>To set relative to the beginning of the file (i.e. index is 0 + offset):
+<code>SeekFrom::Start(offset)</code>
+To set relative to the end of the file (i.e. index is file_lenth - 1 - offset):
+<code>SeekFrom::End(offset)</code>
+To set relative to the current position:
+<code>SeekFrom::End(offset)</code></p>
+
+<h1 id='errors-8' class='section-header'><a href='#errors-8'>Errors</a></h1>
+<p>On error Error::Errno(errno) is returned.</p>
+</div></div><h3 class='impl'><span class='in-band'><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/ops/trait.Drop.html" title="trait core::ops::Drop">Drop</a> for <a class="struct" href="../cfile_rs/struct.CFile.html" title="struct cfile_rs::CFile">CFile</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/cfile_rs/lib.rs.html#468-485' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.drop' class="method"><span id='drop.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Drop.html#tymethod.drop' class='fnname'>drop</a>(&amp;mut self)</code></span></h4>
+<div class='docblock'><p>Ensures the file stream is closed before abandoning the data.</p>
+</div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "cfile_rs";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    <script defer src="../search-index.js"></script>
+</body>
+</html>
