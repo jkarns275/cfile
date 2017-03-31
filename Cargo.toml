@@ -1,6 +1,6 @@
 [package]
 name = "cfile-rs"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Joshua Karns <jkarns@oswego.edu>"]
 description = "A wrapper around the C FILE struct for rust"
 license = "MIT"
