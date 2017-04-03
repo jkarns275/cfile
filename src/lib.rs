@@ -37,20 +37,6 @@ fn get_error<T>() -> Result<T, Error> {
     Err(Error::last_os_error())
 }
 
-/// A utility function to change read/write/execute permissions of a file.
-pub fn chmod(path: &str, mode: i32) -> Result<(), Error> {
-    if let Ok(cstr) = CString::new(path) {
-        let result = unsafe { libc::chmod(cstr.into_raw(), mode) };
-        if result == 0 {
-            Ok(())
-        } else {
-            get_error()
-        }
-    } else {
-        get_error()
-    }
-}
-
 /// A utility function that creates a "buffer" of len bytes.
 /// A Vec is used because it is memory safe and has a bunch of useful functionality (duh).
 pub fn buffer(len: usize) -> Vec<u8> {
