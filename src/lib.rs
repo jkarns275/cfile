@@ -29,7 +29,6 @@ use libc::FILE;
 use std::path::Path;
 use std::ffi::CString;
 use std::ptr::null_mut;
-use std::os::unix::ffi::OsStrExt;
 
 use std::ptr::Unique;
 
@@ -39,14 +38,17 @@ fn get_error<T>() -> Result<T, Error> {
 }
 
 /// A utility function to change read/write/execute permissions of a file.
-pub fn chmod<P: AsRef<Path>>(path: P, mode: u32) -> Result<(), Error> {
-    let result = unsafe { libc::chmod(path.as_ref().as_os_str().as_bytes().as_ptr() as *const i8, mode) };
-    if result == 0 {
-        Ok(())
+pub fn chmod(path: &str, mode: i32) -> Result<(), Error> {
+    if let Ok(cstr) = CString::new(path) {
+        let result = unsafe { libc::chmod(cstr.into_raw(), mode) };
+        if result == 0 {
+            Ok(())
+        } else {
+            get_error()
+        }
     } else {
         get_error()
     }
-
 }
 
 /// A utility function that creates a "buffer" of len bytes.
@@ -92,7 +94,7 @@ impl CFile {
     /// # Failure
     /// This function will return Err for a whole bunch of reasons, the errno id will be returned
     /// as an Error::Errno(u64). For more information on what that number actually means see
-    pub fn open_random_access<P: AsRef<Path>>(path: P) -> Result<CFile, Error> {
+    pub fn open_random_access(path: &str) -> Result<CFile, Error> {
         let _ = Self::create_file(&path); // Ensure the file exists, create it if it doesn't
         Self::open(path, RANDOM_ACCESS_MODE)
     }
@@ -100,7 +102,7 @@ impl CFile {
     /// Attempts to create a file, and then immedietly close it. If the file already exists, this
     /// function will not do anything. If the file does exist, then it will be created with no
     /// and nothing more (it will be empty).
-    pub fn create_file<P: AsRef<Path>>(path: &P) -> Result<(), Error> {
+    pub fn create_file(path: &str) -> Result<(), Error> {
         match Self::open(path, APPEND_READ) {
             Ok(file) => {
                 file.close()
@@ -121,9 +123,9 @@ impl CFile {
     /// // Truncate random access mode will overwrite the old "data.txt" file if it exists.
     /// let mut file = CFile::open("data.txt", TRUNCATAE_RANDOM_ACCESS_MODE).unwrap();
     /// ```
-    pub fn open<P: AsRef<Path>>(path: P, mode: &str) -> Result<CFile, Error> {
+    pub fn open(p: &str, mode: &str) -> Result<CFile, Error> {
         unsafe {
-            if let Ok(path) = CString::new(path.as_ref().as_os_str().as_bytes()) {
+            if let Ok(path) = CString::new(p) {
                 if let Ok(mode) = CString::new(mode) {
                     let file_ptr = libc::fopen(path.as_ptr(), mode.as_ptr());
                     if file_ptr.is_null() {
