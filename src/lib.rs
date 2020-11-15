@@ -22,7 +22,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 use libc::FILE;
 
-pub use std::{
+use std:: {
     ffi::CString,
     io::{Error, ErrorKind, Read, Seek, SeekFrom, Write},
     ptr::{null_mut, NonNull},
@@ -92,11 +92,7 @@ impl CFile {
     /// Attempt to open the file with path p.
     /// # Examples
     /// ```
-    /// use cfile_rs;
-    /// use cfile_rs::*;
-    /// use cfile_rs::CFile;
-    /// use cfile_rs::TRUNCATE_RANDOM_ACCESS_MODE;
-    /// use std::str::from_utf8;
+    /// use cfile_rs::{CFile, TRUNCATE_RANDOM_ACCESS_MODE};
     ///
     /// // Truncate random access mode will overwrite the old "data.txt" file if it exists.
     /// let mut file = CFile::open("data.txt", TRUNCATE_RANDOM_ACCESS_MODE).unwrap();
@@ -128,11 +124,8 @@ impl CFile {
     /// On error Error::Errno(errno) is returned.
     /// # Examples
     /// ```
-    /// use cfile_rs;
-    /// use cfile_rs::*;
-    /// use cfile_rs::CFile;
-    /// use cfile_rs::UPDATE;
-    /// use std::str::from_utf8;
+    /// use cfile_rs::{CFile, UPDATE};
+    /// use std::io::Write;
     ///
     /// // Truncate random access mode will overwrite the old "data.txt" file if it exists.
     /// let mut file = CFile::open("data.txt", UPDATE).unwrap();
@@ -210,11 +203,8 @@ impl Write for CFile {
     /// returned.
     /// # Examples
     /// ```
-    /// use cfile_rs;
-    /// use cfile_rs::*;
-    /// use cfile_rs::CFile;
-    /// use cfile_rs::TRUNCATE_RANDOM_ACCESS_MODE;
-    /// use std::str::from_utf8;
+    /// use cfile_rs::{CFile, TRUNCATE_RANDOM_ACCESS_MODE};
+    /// use std::io::Write;
     ///
     /// // Truncate random access mode will overwrite the old "data.txt" file if it exists.
     /// let mut file = CFile::open("data.txt", TRUNCATE_RANDOM_ACCESS_MODE).unwrap();
@@ -243,11 +233,8 @@ impl Write for CFile {
     /// returned.
     /// # Examples
     /// ```
-    /// use cfile_rs;
-    /// use cfile_rs::*;
-    /// use cfile_rs::CFile;
-    /// use cfile_rs::TRUNCATE_RANDOM_ACCESS_MODE;
-    /// use std::str::from_utf8;
+    /// use cfile_rs::{CFile, TRUNCATE_RANDOM_ACCESS_MODE};
+    /// use std::io::Write;
     ///
     /// // Truncate random access mode will overwrite the old "data.txt" file if it exists.
     /// let mut file = CFile::open("data.txt", TRUNCATE_RANDOM_ACCESS_MODE).unwrap();
@@ -274,11 +261,8 @@ impl Write for CFile {
     /// filesystem.
     /// # Examples
     /// ```
-    /// use cfile_rs;
-    /// use cfile_rs::SeekFrom;
-    /// use cfile_rs::CFile;
-    /// use cfile_rs::TRUNCATE_RANDOM_ACCESS_MODE;
-    /// use cfile_rs::*;
+    /// use cfile_rs::{CFile, TRUNCATE_RANDOM_ACCESS_MODE};
+    /// use std::io::Write;
     ///
     /// // Truncate random access mode will overwrite the old "data.txt" file if it exists.
     /// let mut file = CFile::open("data.txt", TRUNCATE_RANDOM_ACCESS_MODE).unwrap();
@@ -310,11 +294,9 @@ impl Read for CFile {
     /// If an error occurs during reading, some varient of error will be returned.
     /// # Examples
     /// ```
-    /// use cfile_rs;
-    /// use cfile_rs::CFile;
-    /// use cfile_rs::TRUNCATE_RANDOM_ACCESS_MODE;
+    /// use cfile_rs::{CFile, TRUNCATE_RANDOM_ACCESS_MODE};
+    /// use std::io::{Seek, SeekFrom, Read, Write};
     /// use std::str::from_utf8;
-    /// use std::io::{ Seek, SeekFrom, Read, Write };
     ///
     /// // Truncate random access mode will overwrite the old "data.txt" file if it exists.
     /// let mut file = CFile::open("data.txt", TRUNCATE_RANDOM_ACCESS_MODE).unwrap();
