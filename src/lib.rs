@@ -19,18 +19,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #![doc(html_root_url = "https://jkarns275.github.io/cfile/")]
-#![feature(libc)]
-#![feature(unique)]
-extern crate libc;
 
-pub use std::io::{ Seek, SeekFrom, Read, Write, Error, ErrorKind };
 use libc::FILE;
 
-use std::path::Path;
-use std::ffi::CString;
-use std::ptr::null_mut;
-
-use std::ptr::Unique;
+pub use std::{
+    ffi::CString,
+    io::{Seek, SeekFrom, Read, Write, Error, ErrorKind},
+    ptr::{null_mut, NonNull},
+};
 
 /// A utility function to pull the current value of errno and put it into an Error::Errno
 fn get_error<T>() -> Result<T, Error> {
@@ -61,14 +57,14 @@ pub static APPEND_ONLY: &'static str = "a";
 pub static APPEND_READ: &'static str = "a+";
 /// A &'static str to be passed into the CFile::open method. It will open the file in a way that will allow
 /// reading and writing, including overwriting old data. It will create the file if it doesn't exist
-pub static TRUNCATAE_RANDOM_ACCESS_MODE: &'static str = "wb+";
+pub static TRUNCATE_RANDOM_ACCESS_MODE: &'static str = "wb+";
 
 
 /// A wrapper around C's file type.
 /// Attempts to mimic the functionality if rust's std::fs::File while still allowing complete
 /// control of all I/O operations.
 pub struct CFile {
-    file_ptr: Unique<FILE>,
+    file_ptr: NonNull<FILE>,
     pub path: CString
 }
 
@@ -103,11 +99,11 @@ impl CFile {
     /// use cfile_rs;
     /// use cfile_rs::*;
     /// use cfile_rs::CFile;
-    /// use cfile_rs::TRUNCATAE_RANDOM_ACCESS_MODE;
+    /// use cfile_rs::TRUNCATE_RANDOM_ACCESS_MODE;
     /// use std::str::from_utf8;
     ///
     /// // Truncate random access mode will overwrite the old "data.txt" file if it exists.
-    /// let mut file = CFile::open("data.txt", TRUNCATAE_RANDOM_ACCESS_MODE).unwrap();
+    /// let mut file = CFile::open("data.txt", TRUNCATE_RANDOM_ACCESS_MODE).unwrap();
     /// ```
     pub fn open(p: &str, mode: &str) -> Result<CFile, Error> {
         unsafe {
@@ -119,7 +115,7 @@ impl CFile {
                     } else {
                         Ok(
                             CFile {
-                                file_ptr: Unique::new(file_ptr),
+                                file_ptr: NonNull::new_unchecked(file_ptr),
                                 path: path
                             }
                         )
@@ -167,10 +163,10 @@ impl CFile {
     /// On error Error::Errno(errno) is returned.
     pub fn close(mut self) -> Result<(), Error> {
         unsafe {
-            if !(*self.file_ptr).is_null() {
-                let res = libc::fclose(*self.file_ptr);
+            if !(self.file_ptr.as_ptr()).is_null() {
+                let res = libc::fclose(self.file_ptr.as_ptr());
                 if res == 0 {
-                    self.file_ptr = Unique::new(null_mut::<libc::FILE>());
+                    self.file_ptr = NonNull::new_unchecked(null_mut::<libc::FILE>());
                     Ok(())
                 } else {
                     get_error()
@@ -184,7 +180,7 @@ impl CFile {
     /// Returns the underlying file pointer as a reference. It is returned as a reference to, in theory,
     /// prevent it from being used after the file is closed.
     pub unsafe fn file<'a>(&'a mut self) -> &'a mut libc::FILE {
-        &mut (**self.file_ptr)
+        &mut (*self.file_ptr.as_ptr())
     }
 
     /// Returns the current position in the file.
@@ -192,7 +188,7 @@ impl CFile {
     /// On error Error::Errno(errno) is returned.
     pub fn current_pos(&self) -> Result<u64, Error> {
         unsafe {
-            let pos = libc::ftell(*self.file_ptr);
+            let pos = libc::ftell(self.file_ptr.as_ptr());
             if pos != -1 {
                 Ok(pos as u64)
             } else {
@@ -224,17 +220,17 @@ impl Write for CFile {
     /// use cfile_rs;
     /// use cfile_rs::*;
     /// use cfile_rs::CFile;
-    /// use cfile_rs::TRUNCATAE_RANDOM_ACCESS_MODE;
+    /// use cfile_rs::TRUNCATE_RANDOM_ACCESS_MODE;
     /// use std::str::from_utf8;
     ///
     /// // Truncate random access mode will overwrite the old "data.txt" file if it exists.
-    /// let mut file = CFile::open("data.txt", TRUNCATAE_RANDOM_ACCESS_MODE).unwrap();
+    /// let mut file = CFile::open("data.txt", TRUNCATE_RANDOM_ACCESS_MODE).unwrap();
     /// let _ = file.write_all("Howdy folks".as_bytes());   // Write some data!
     ///
     /// ```
     fn write_all(&mut self, buf: &[u8]) -> Result<(), Error> {
         unsafe {
-            let written_bytes = libc::fwrite(buf.as_ptr() as *const libc::c_void, 1, buf.len(), *self.file_ptr);
+            let written_bytes = libc::fwrite(buf.as_ptr() as *const libc::c_void, 1, buf.len(), self.file_ptr.as_ptr());
             if written_bytes != buf.len() {
                 get_error()
             } else {
@@ -252,17 +248,17 @@ impl Write for CFile {
     /// use cfile_rs;
     /// use cfile_rs::*;
     /// use cfile_rs::CFile;
-    /// use cfile_rs::TRUNCATAE_RANDOM_ACCESS_MODE;
+    /// use cfile_rs::TRUNCATE_RANDOM_ACCESS_MODE;
     /// use std::str::from_utf8;
     ///
     /// // Truncate random access mode will overwrite the old "data.txt" file if it exists.
-    /// let mut file = CFile::open("data.txt", TRUNCATAE_RANDOM_ACCESS_MODE).unwrap();
+    /// let mut file = CFile::open("data.txt", TRUNCATE_RANDOM_ACCESS_MODE).unwrap();
     /// let _ = file.write("Howdy folks".as_bytes());   // Write some data!
     ///
     /// ```
     fn write(&mut self, buf: &[u8]) -> Result<usize, Error> {
         unsafe {
-            let written_bytes = libc::fwrite(buf.as_ptr() as *const libc::c_void, 1, buf.len(), *self.file_ptr);
+            let written_bytes = libc::fwrite(buf.as_ptr() as *const libc::c_void, 1, buf.len(), self.file_ptr.as_ptr());
             if written_bytes != buf.len() {
                 get_error()
             } else {
@@ -278,11 +274,11 @@ impl Write for CFile {
     /// use cfile_rs;
     /// use cfile_rs::SeekFrom;
     /// use cfile_rs::CFile;
-    /// use cfile_rs::TRUNCATAE_RANDOM_ACCESS_MODE;
+    /// use cfile_rs::TRUNCATE_RANDOM_ACCESS_MODE;
     /// use cfile_rs::*;
     ///
     /// // Truncate random access mode will overwrite the old "data.txt" file if it exists.
-    /// let mut file = CFile::open("data.txt", TRUNCATAE_RANDOM_ACCESS_MODE).unwrap();
+    /// let mut file = CFile::open("data.txt", TRUNCATE_RANDOM_ACCESS_MODE).unwrap();
     /// match file.write_all("Howdy folks!".as_bytes()) {
     ///     Ok(()) => println!("Successfully wrote to the file!"),
     ///     Err(err) => {
@@ -294,7 +290,7 @@ impl Write for CFile {
     /// ```
     fn flush(&mut self) -> Result<(), Error> {
         unsafe {
-            let result = libc::fflush(*self.file_ptr);
+            let result = libc::fflush(self.file_ptr.as_ptr());
             if result == 0 {
                 Ok(())
             } else {
@@ -313,12 +309,12 @@ impl Read for CFile {
     /// ```
     /// use cfile_rs;
     /// use cfile_rs::CFile;
-    /// use cfile_rs::TRUNCATAE_RANDOM_ACCESS_MODE;
+    /// use cfile_rs::TRUNCATE_RANDOM_ACCESS_MODE;
     /// use std::str::from_utf8;
     /// use std::io::{ Seek, SeekFrom, Read, Write };
     ///
     /// // Truncate random access mode will overwrite the old "data.txt" file if it exists.
-    /// let mut file = CFile::open("data.txt", TRUNCATAE_RANDOM_ACCESS_MODE).unwrap();
+    /// let mut file = CFile::open("data.txt", TRUNCATE_RANDOM_ACCESS_MODE).unwrap();
     /// let _ = file.write_all("Howdy folks".as_bytes());   // Write some data!
     /// let _ = file.seek(SeekFrom::Start(0));              // Move back to the beginning of the file
     /// let mut buffer = cfile_rs::buffer(10);              // Create a buffer (a Vec<u8>) to read into
@@ -375,7 +371,7 @@ impl Read for CFile {
     /// ```
     fn read(&mut self, buf: &mut [u8]) -> Result<usize, Error> {
         unsafe {
-            let result = libc::fread(buf.as_ptr() as *mut libc::c_void, 1, buf.len(), *self.file_ptr);
+            let result = libc::fread(buf.as_ptr() as *mut libc::c_void, 1, buf.len(), self.file_ptr.as_ptr());
             if result != buf.len() {
                 match get_error::<u8>() {
                     Err(err) => {
@@ -405,12 +401,12 @@ impl Read for CFile {
     /// ```
     fn read_exact(&mut self, buf: &mut [u8]) -> Result<(), Error> {
         unsafe {
-            let result = libc::fread(buf.as_ptr() as *mut libc::c_void, 1, buf.len(), *self.file_ptr);
+            let result = libc::fread(buf.as_ptr() as *mut libc::c_void, 1, buf.len(), self.file_ptr.as_ptr());
             if result == buf.len() {
                 Ok(())
             } else {
                 // Check if we hit the end of the file
-                if libc::feof(*self.file_ptr) != 0 {
+                if libc::feof(self.file_ptr.as_ptr()) != 0 {
                     get_error()
                 } else {
                     get_error()
@@ -424,15 +420,15 @@ impl Seek for CFile {
     /// Changes the current position in the file using the SeekFrom enum.
     ///
     /// To set relative to the beginning of the file (i.e. index is 0 + offset):
-    /// ```
+    /// ```ignore
     /// SeekFrom::Start(offset)
     /// ```
     /// To set relative to the end of the file (i.e. index is file_lenth - 1 - offset):
-    /// ```
+    /// ```ignore
     /// SeekFrom::End(offset)
     /// ```
     /// To set relative to the current position:
-    /// ```
+    /// ```ignore
     /// SeekFrom::End(offset)
     /// ```
     /// # Errors
@@ -441,11 +437,11 @@ impl Seek for CFile {
         unsafe {
             let result = match pos {
                 SeekFrom::Start(from) =>
-                    libc::fseek(*self.file_ptr, from as libc::c_long, libc::SEEK_SET),
+                    libc::fseek(self.file_ptr.as_ptr(), from as libc::c_long, libc::SEEK_SET),
                 SeekFrom::End(from) =>
-                    libc::fseek(*self.file_ptr, from as libc::c_long, libc::SEEK_END),
+                    libc::fseek(self.file_ptr.as_ptr(), from as libc::c_long, libc::SEEK_END),
                 SeekFrom::Current(delta) =>
-                    libc::fseek(*self.file_ptr, delta as libc::c_long, libc::SEEK_CUR)
+                    libc::fseek(self.file_ptr.as_ptr(), delta as libc::c_long, libc::SEEK_CUR)
             };
             if result == 0 {
                 self.current_pos()
@@ -460,10 +456,10 @@ impl Drop for CFile {
     /// Ensures the file stream is closed before abandoning the data.
     fn drop(&mut self) {
         let _ = unsafe {
-            if !(*self.file_ptr).is_null() {
-                let res = libc::fclose(*self.file_ptr);
+            if !(self.file_ptr.as_ptr()).is_null() {
+                let res = libc::fclose(self.file_ptr.as_ptr());
                 if res == 0 {
-                    self.file_ptr = Unique::new(null_mut::<libc::FILE>());
+                    self.file_ptr = NonNull::new_unchecked(null_mut::<libc::FILE>());
                     Ok(())
                 } else {
                     get_error()
@@ -478,19 +474,14 @@ impl Drop for CFile {
 #[cfg(test)]
 mod tests {
     use std::str;
-    use CFile;
-    use SeekFrom;
-    use Read;
-    use Write;
-    use Seek;
-    use buffer;
-    use TRUNCATAE_RANDOM_ACCESS_MODE;
+    use super::{CFile, SeekFrom, Read, Write, Seek, buffer, TRUNCATE_RANDOM_ACCESS_MODE};
+
     #[test]
     fn file_flush() {
-        let mut file = CFile::open("data.txt", TRUNCATAE_RANDOM_ACCESS_MODE).unwrap();
+        let mut file = CFile::open("data.txt", TRUNCATE_RANDOM_ACCESS_MODE).unwrap();
         match file.write_all("Howdy folks!".as_bytes()) {
             Ok(()) => println!("Successfully wrote to the file!"),
-            Err(e) => {
+            Err(_e) => {
                 // darn
             }
         };
@@ -506,7 +497,7 @@ mod tests {
                 let str = str::from_utf8(data).unwrap();
                 println!("{}", str);
             },
-            Err(e) => {
+            Err(_e) => {
                 // Oh no!
             },
         };
