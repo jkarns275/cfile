@@ -24,7 +24,7 @@ use libc::FILE;
 
 pub use std::{
     ffi::CString,
-    io::{Seek, SeekFrom, Read, Write, Error, ErrorKind},
+    io::{Error, ErrorKind, Read, Seek, SeekFrom, Write},
     ptr::{null_mut, NonNull},
 };
 
@@ -59,17 +59,15 @@ pub static APPEND_READ: &'static str = "a+";
 /// reading and writing, including overwriting old data. It will create the file if it doesn't exist
 pub static TRUNCATE_RANDOM_ACCESS_MODE: &'static str = "wb+";
 
-
 /// A wrapper around C's file type.
 /// Attempts to mimic the functionality if rust's std::fs::File while still allowing complete
 /// control of all I/O operations.
 pub struct CFile {
     file_ptr: NonNull<FILE>,
-    pub path: CString
+    pub path: CString,
 }
 
 impl CFile {
-
     /// Attempts to open a file in random access mode (i.e. rb+). However, unlike rb+, if the file
     /// doesn't exist, it will be created. To avoid createion, simply call CFile::open(path, "rb+"),
     /// which will return an error if the file doesn't exist.
@@ -86,10 +84,8 @@ impl CFile {
     /// and nothing more (it will be empty).
     pub fn create_file(path: &str) -> Result<(), Error> {
         match Self::open(path, APPEND_READ) {
-            Ok(file) => {
-                file.close()
-            },
-            Err(e) => Err(e)
+            Ok(file) => file.close(),
+            Err(e) => Err(e),
         }
     }
 
@@ -113,12 +109,10 @@ impl CFile {
                     if file_ptr.is_null() {
                         get_error()
                     } else {
-                        Ok(
-                            CFile {
-                                file_ptr: NonNull::new_unchecked(file_ptr),
-                                path: path
-                            }
-                        )
+                        Ok(CFile {
+                            file_ptr: NonNull::new_unchecked(file_ptr),
+                            path: path,
+                        })
                     }
                 } else {
                     get_error()
@@ -210,7 +204,6 @@ impl CFile {
 }
 
 impl Write for CFile {
-
     /// Attempts to write all of the bytes in buf to the file.
     /// # Errors
     /// If an error occurs during writing, Error::WriteError(bytes_written, errno) will be
@@ -230,7 +223,12 @@ impl Write for CFile {
     /// ```
     fn write_all(&mut self, buf: &[u8]) -> Result<(), Error> {
         unsafe {
-            let written_bytes = libc::fwrite(buf.as_ptr() as *const libc::c_void, 1, buf.len(), self.file_ptr.as_ptr());
+            let written_bytes = libc::fwrite(
+                buf.as_ptr() as *const libc::c_void,
+                1,
+                buf.len(),
+                self.file_ptr.as_ptr(),
+            );
             if written_bytes != buf.len() {
                 get_error()
             } else {
@@ -258,7 +256,12 @@ impl Write for CFile {
     /// ```
     fn write(&mut self, buf: &[u8]) -> Result<usize, Error> {
         unsafe {
-            let written_bytes = libc::fwrite(buf.as_ptr() as *const libc::c_void, 1, buf.len(), self.file_ptr.as_ptr());
+            let written_bytes = libc::fwrite(
+                buf.as_ptr() as *const libc::c_void,
+                1,
+                buf.len(),
+                self.file_ptr.as_ptr(),
+            );
             if written_bytes != buf.len() {
                 get_error()
             } else {
@@ -334,28 +337,26 @@ impl Read for CFile {
         let _ = self.seek(SeekFrom::End(0));
         let end = self.current_pos();
         match pos {
-            Ok(cur_pos) => {
-                match end {
-                    Ok(end_pos) => {
-                        if end_pos == cur_pos { return Ok(0) }
-                        let to_read = (end_pos - cur_pos) as usize;
-                        println!("to_read {}", to_read);
-                        if buf.len() < to_read {
-                            let to_reserve = to_read - buf.len();
-                            Self::expand_buffer(buf, to_reserve);
-                        }
-                        let _ = self.seek(SeekFrom::Start(cur_pos as u64));
-                        match self.read_exact(buf) {
-                            Ok(()) => {
-                                Ok(to_read)
-                            },
-                            Err(e) => Err(e)
-                        }
-                    },
-                    Err(e) => Err(e)
+            Ok(cur_pos) => match end {
+                Ok(end_pos) => {
+                    if end_pos == cur_pos {
+                        return Ok(0);
+                    }
+                    let to_read = (end_pos - cur_pos) as usize;
+                    println!("to_read {}", to_read);
+                    if buf.len() < to_read {
+                        let to_reserve = to_read - buf.len();
+                        Self::expand_buffer(buf, to_reserve);
+                    }
+                    let _ = self.seek(SeekFrom::Start(cur_pos as u64));
+                    match self.read_exact(buf) {
+                        Ok(()) => Ok(to_read),
+                        Err(e) => Err(e),
+                    }
                 }
+                Err(e) => Err(e),
             },
-            Err(e) => Err(e)
+            Err(e) => Err(e),
         }
     }
 
@@ -371,7 +372,12 @@ impl Read for CFile {
     /// ```
     fn read(&mut self, buf: &mut [u8]) -> Result<usize, Error> {
         unsafe {
-            let result = libc::fread(buf.as_ptr() as *mut libc::c_void, 1, buf.len(), self.file_ptr.as_ptr());
+            let result = libc::fread(
+                buf.as_ptr() as *mut libc::c_void,
+                1,
+                buf.len(),
+                self.file_ptr.as_ptr(),
+            );
             if result != buf.len() {
                 match get_error::<u8>() {
                     Err(err) => {
@@ -380,8 +386,8 @@ impl Read for CFile {
                         } else {
                             Err(err)
                         }
-                    },
-                    Ok(_) => panic!("This is impossible")
+                    }
+                    Ok(_) => panic!("This is impossible"),
                 }
             } else {
                 Ok(result)
@@ -401,7 +407,12 @@ impl Read for CFile {
     /// ```
     fn read_exact(&mut self, buf: &mut [u8]) -> Result<(), Error> {
         unsafe {
-            let result = libc::fread(buf.as_ptr() as *mut libc::c_void, 1, buf.len(), self.file_ptr.as_ptr());
+            let result = libc::fread(
+                buf.as_ptr() as *mut libc::c_void,
+                1,
+                buf.len(),
+                self.file_ptr.as_ptr(),
+            );
             if result == buf.len() {
                 Ok(())
             } else {
@@ -436,12 +447,17 @@ impl Seek for CFile {
     fn seek(&mut self, pos: SeekFrom) -> Result<u64, Error> {
         unsafe {
             let result = match pos {
-                SeekFrom::Start(from) =>
-                    libc::fseek(self.file_ptr.as_ptr(), from as libc::c_long, libc::SEEK_SET),
-                SeekFrom::End(from) =>
-                    libc::fseek(self.file_ptr.as_ptr(), from as libc::c_long, libc::SEEK_END),
-                SeekFrom::Current(delta) =>
-                    libc::fseek(self.file_ptr.as_ptr(), delta as libc::c_long, libc::SEEK_CUR)
+                SeekFrom::Start(from) => {
+                    libc::fseek(self.file_ptr.as_ptr(), from as libc::c_long, libc::SEEK_SET)
+                }
+                SeekFrom::End(from) => {
+                    libc::fseek(self.file_ptr.as_ptr(), from as libc::c_long, libc::SEEK_END)
+                }
+                SeekFrom::Current(delta) => libc::fseek(
+                    self.file_ptr.as_ptr(),
+                    delta as libc::c_long,
+                    libc::SEEK_CUR,
+                ),
             };
             if result == 0 {
                 self.current_pos()
@@ -473,8 +489,8 @@ impl Drop for CFile {
 
 #[cfg(test)]
 mod tests {
+    use super::{buffer, CFile, Read, Seek, SeekFrom, Write, TRUNCATE_RANDOM_ACCESS_MODE};
     use std::str;
-    use super::{CFile, SeekFrom, Read, Write, Seek, buffer, TRUNCATE_RANDOM_ACCESS_MODE};
 
     #[test]
     fn file_flush() {
@@ -485,21 +501,22 @@ mod tests {
                 // darn
             }
         };
-        let _ = file.flush();                       // Probably unnecessary
+        let _ = file.flush(); // Probably unnecessary
         let buf_size = 20;
-        let mut buf = buffer(buf_size);      // 20 will be more than enough to store our data
-        let _ = file.seek(SeekFrom::Start(0));      // Move to 1 byte after the beginning of the file
-        let result = file.read_exact(&mut buf);     // Read exactly 20 bytes
+        let mut buf = buffer(buf_size); // 20 will be more than enough to store our data
+        let _ = file.seek(SeekFrom::Start(0)); // Move to 1 byte after the beginning of the file
+        let result = file.read_exact(&mut buf); // Read exactly 20 bytes
         match result {
-            Ok(()) => {                             // This won't happen since we only wrote 12 bytes,
-                let data = &buf[0..buf_size];       // but if it did this is how we could print the data
-                                                    // as a string.
+            Ok(()) => {
+                // This won't happen since we only wrote 12 bytes,
+                let data = &buf[0..buf_size]; // but if it did this is how we could print the data
+                                              // as a string.
                 let str = str::from_utf8(data).unwrap();
                 println!("{}", str);
-            },
+            }
             Err(_e) => {
                 // Oh no!
-            },
+            }
         };
     }
 }
